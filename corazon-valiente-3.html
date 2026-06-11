@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="color-scheme" content="light only">
+<title>Corazón Valiente III · Capuccina y la Sombra del pantano</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,650&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    color-scheme:light only;
+    --ink:#1a1f2b; --ink-soft:#3c4456;
+    --rosa:#8a2f3d; --rosa-bg:#f9ecee;
+    --verde:#1d4a35; --verde-bg:#e9f2ec;
+    --ambar:#5f3f0a; --ambar-bg:#f8f0de;
+    --azul:#27405e; --azul-bg:#e7edf4;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;}
+  html{background:#ffffff !important;}
+  body{
+    background:#ffffff !important;color:var(--ink);font-family:'Inter',sans-serif;
+    overflow:hidden;height:100vh;width:100vw;position:fixed;inset:0;
+  }
+  .bg-layer{position:fixed;inset:0;background:#ffffff;z-index:-1;}
+  #game{display:block;width:100vw;height:100vh;touch-action:none;}
+
+  #hud{position:fixed;top:10px;left:10px;right:10px;display:flex;justify-content:space-between;
+    align-items:center;pointer-events:none;z-index:5;gap:8px;}
+  .hud-box{background:rgba(255,255,255,.92);border:2px solid var(--ink);border-radius:12px;
+    padding:6px 12px;font-size:13px;font-weight:700;color:var(--ink);box-shadow:0 2px 0 var(--ink);}
+  #stepLabel{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;}
+  #btnMute{pointer-events:auto;cursor:pointer;}
+
+  #controls{position:fixed;bottom:14px;left:0;right:0;display:flex;justify-content:space-between;
+    padding:0 16px;z-index:5;}
+  .pad{display:flex;gap:10px;}
+  .ctl{width:64px;height:64px;border-radius:50%;border:2.5px solid var(--ink);
+    background:rgba(255,255,255,.92);color:var(--ink);font-size:26px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;box-shadow:0 3px 0 var(--ink);touch-action:none;}
+  .ctl:active{transform:translateY(2px);box-shadow:0 1px 0 var(--ink);}
+  #btnJump{width:78px;height:78px;background:var(--rosa-bg);border-color:var(--rosa);color:var(--rosa);box-shadow:0 3px 0 var(--rosa);}
+  #btnJump:active{box-shadow:0 1px 0 var(--rosa);}
+
+  #overlay{position:fixed;inset:0;background:transparent;z-index:10;display:none;
+    align-items:flex-end;justify-content:center;pointer-events:none;}
+  #overlay.show{display:flex;}
+  .panel{background:#ffffff;border-radius:20px 20px 0 0;width:100%;max-width:560px;
+    max-height:74vh;overflow-y:auto;padding:22px 20px 28px;border-top:3px solid var(--ink);
+    animation:up .45s ease;pointer-events:auto;box-shadow:0 -10px 40px rgba(20,24,34,.35);}
+  @keyframes up{from{transform:translateY(60px);opacity:0;}to{transform:none;opacity:1;}}
+  .panel .eyebrow{font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-soft);font-weight:700;margin-bottom:6px;}
+  .panel h2{font-family:'Fraunces',serif;font-size:21px;font-weight:650;line-height:1.2;margin-bottom:6px;color:var(--ink);}
+  .panel p.lead{font-size:13.5px;color:var(--ink-soft);margin-bottom:12px;}
+  .panel p.lead b{color:var(--ink);}
+
+  .opt{display:block;width:100%;text-align:left;cursor:pointer;background:#f5f5f7;
+    border:1.5px solid #c5c0b4;border-radius:13px;padding:13px 15px;margin-bottom:9px;
+    font-family:'Inter',sans-serif;font-size:14px;font-weight:600;color:var(--ink);}
+  .opt small{display:block;font-weight:400;font-size:12px;color:var(--ink-soft);margin-top:2px;}
+  .opt:active{transform:scale(.985);}
+  .chips{display:flex;flex-wrap:wrap;gap:7px;margin:4px 0;}
+  .chip{border:1.5px solid #c5c0b4;background:#ffffff;border-radius:999px;padding:8px 13px;
+    font-family:'Inter',sans-serif;font-size:13px;font-weight:500;color:var(--ink);cursor:pointer;}
+  .chip.sel{background:var(--azul);border-color:var(--azul);color:#ffffff;font-weight:600;}
+  .grp-label{font-size:12px;font-weight:700;color:var(--ink);margin:12px 0 5px;}
+  .check{display:flex;gap:10px;align-items:flex-start;background:#ffffff;border:1.5px solid #c9c4b8;
+    border-radius:10px;padding:11px 12px;margin-bottom:8px;cursor:pointer;font-size:13px;color:var(--ink);}
+  .check.on{border-color:var(--verde);background:var(--verde-bg);}
+  .check .box{flex-shrink:0;width:20px;height:20px;border-radius:6px;border:2px solid var(--ink-soft);
+    display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;}
+  .check.on .box{background:var(--verde);border-color:var(--verde);}
+  .btn{display:block;width:100%;border:none;cursor:pointer;border-radius:13px;padding:14px;
+    font-family:'Inter',sans-serif;font-size:14.5px;font-weight:700;margin-top:10px;text-align:center;}
+  .btn.primary{background:var(--ink);color:#faf6f0;}
+  .btn.rosa{background:var(--rosa);color:#fff;}
+  .btn:disabled{opacity:.35;}
+  .frase{padding:13px 15px;background:var(--rosa-bg);border:1.5px solid var(--rosa);border-radius:13px;
+    font-family:'Fraunces',serif;font-size:15.5px;line-height:1.4;color:#3d1219;margin-top:10px;}
+  .resultado{border-radius:13px;padding:14px 16px;border:1.5px solid;margin-bottom:10px;}
+  .resultado h3{font-family:'Fraunces',serif;font-size:17px;font-weight:650;margin-bottom:4px;}
+  .resultado p{font-size:13px;}
+  .resultado .guion{margin-top:8px;padding:9px 11px;background:#fff;border-radius:9px;font-size:12.5px;font-style:italic;color:var(--ink);}
+  .resultado.verde{background:var(--verde-bg);border-color:var(--verde);color:#10251a;}
+  .resultado.verde h3{color:var(--verde);}
+  .resultado.ambar{background:var(--ambar-bg);border-color:var(--ambar);color:#241a06;}
+  .resultado.ambar h3{color:var(--ambar);}
+  .resultado.azul{background:var(--azul-bg);border-color:var(--azul);color:#132032;}
+  .resultado.azul h3{color:var(--azul);}
+  .res-item{background:#f5f5f7;border:1.5px solid #b9b4a8;border-radius:11px;padding:11px 13px;margin-bottom:8px;}
+  .res-item h4{font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--ink-soft);margin-bottom:3px;}
+  .res-item p{font-size:13px;color:var(--ink);}
+  input.otro{width:100%;border:1.5px dashed #c5c0b4;border-radius:999px;background:#fff;
+    padding:8px 13px;font-family:'Inter',sans-serif;font-size:13px;color:var(--ink);margin-top:7px;}
+  input.otro:focus{outline:none;border-color:var(--azul);border-style:solid;}
+  .breath{width:110px;height:110px;border-radius:50%;background:var(--rosa-bg);border:2.5px solid var(--rosa);
+    margin:14px auto;animation:breathe 10s ease-in-out infinite;display:flex;align-items:center;justify-content:center;font-size:34px;}
+  @keyframes breathe{0%,100%{transform:scale(.75);}40%{transform:scale(1.15);}55%{transform:scale(1.15);}}
+</style>
+</head>
+<body>
+<div class="bg-layer"></div>
+<canvas id="game"></canvas>
+
+<div id="hud">
+  <div class="hud-box" id="stepLabel">ZONA 1 · TU CUERPO</div>
+  <div style="display:flex;gap:8px;">
+    <div class="hud-box" id="frogHud" style="display:none;">🐱 montada · doble salto</div>
+    <div class="hud-box">💗 <span id="heartsCount">0</span></div>
+    <div class="hud-box" id="btnMute">🔊</div>
+  </div>
+</div>
+
+<div id="controls">
+  <div class="pad">
+    <div class="ctl" id="btnL">◀</div>
+    <div class="ctl" id="btnR">▶</div>
+  </div>
+  <div class="ctl" id="btnJump">⤒</div>
+</div>
+
+<div id="overlay"><div class="panel" id="panel"></div></div>
+
+<script>
+"use strict";
+/* =====================================================================
+   CORAZÓN VALIENTE II
+   + Música chiptune original (Web Audio) con modo luz/sombra
+   + Mensajes de amor en los bloques · huevo → sapito compañero (doble salto)
+   + Caracoles del rencor · Sapo de la Sombra tras las preguntas
+   ===================================================================== */
+
+// ---------------- canvas ----------------
+const cv=document.getElementById('game');
+const cx=cv.getContext('2d');
+let W=0,H=0,GROUND=0;
+function resize(){
+  W=cv.width=window.innerWidth*devicePixelRatio;
+  H=cv.height=window.innerHeight*devicePixelRatio;
+  cv.style.width=window.innerWidth+'px';
+  cv.style.height=window.innerHeight+'px';
+  cx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+  GROUND=window.innerHeight-110;
+}
+window.addEventListener('resize',resize);resize();
+
+// ---------------- nivel ----------------
+const ZONE_W=1400;
+const ZONES=[
+  {name:'ZONA 1 · TU CUERPO',  sky1:'#ffe9ec',sky2:'#fff7f8',hill:'#f3c3cc'},
+  {name:'ZONA 2 · ESCUCHAR',   sky1:'#e7f0fa',sky2:'#f6fafd',hill:'#bdd3e8'},
+  {name:'ZONA 3 · LA EMOCIÓN', sky1:'#fdf0e0',sky2:'#fffaf2',hill:'#ecd2a8'},
+  {name:'ZONA 4 · LA FRASE',   sky1:'#f6eafc',sky2:'#fcf7fe',hill:'#d9c0e8'},
+  {name:'ZONA 5 · EL TEST',    sky1:'#e9f4ee',sky2:'#f7fbf8',hill:'#bcdcc8'},
+  {name:'ZONA 6 · EL ACUERDO', sky1:'#fff3d9',sky2:'#fffbef',hill:'#ecd89a'},
+];
+const LEVEL_LEN=ZONE_W*ZONES.length+700;
+function P(x,hAbove,w){return{x,top:()=>GROUND-hAbove,w,h:18};}
+const plats=[
+  P(380,90,140),P(640,160,130),P(960,100,150),
+  P(1700,110,140),P(2040,180,120),P(2360,100,150),
+  P(3120,95,150),P(3420,170,190),P(3760,110,140),
+  P(4520,100,150),P(4850,175,120),P(5160,105,140),
+  P(5950,95,150),P(6260,165,130),P(6600,100,140),
+  P(7350,110,150),P(7700,180,120),
+  // torre final bonus: el escalón medio se alcanza normal; la cima SOLO con doble salto
+  P(7980,100,130), P(8160,250,150),
+];
+const BONUS_TOP=plats[plats.length-1];
+
+// Bloques: 'suelo' (h<=162, pista despejada) o 'pareja' con plataforma (h = plat_h + 140,
+// holgura 58px sobre la cabeza al caminar en la plataforma y bonk alcanzable al saltar)
+const qblocks=[
+  {x:210,h:152},   // suelo
+  {x:430,h:230},   // sobre P(380,90)
+  {x:840,h:158},   // suelo
+  {x:1750,h:250},  // sobre P(1700,110)
+  {x:2230,h:156},  // suelo
+  {x:3470,h:310},  // sobre P(3420,170)
+  {x:4570,h:240},  // sobre P(4520,100)
+  {x:5030,h:154},  // suelo
+  {x:6000,h:235},  // sobre P(5950,95)
+  {x:6450,h:160},  // suelo
+  {x:7400,h:250},  // sobre P(7350,110)
+].map(b=>({x:b.x,hAbove:b.h,used:false,bump:0}));
+
+const fruits=[];
+[520,820,1450,1900,2550,2900,3300,3950,4300,4950,5400,5750,6400,6900,7550].forEach(x=>{
+  fruits.push({x,hAbove:60+((x*7)%3)*55,taken:false,t:Math.random()*6});
+});
+// frutas bonus en la cima
+[8190,8230,8270].forEach(x=>fruits.push({x,hAbove:300,taken:false,t:0,bonus:true}));
+
+const checkpoints=ZONES.map((z,i)=>({x:ZONE_W*i+ZONE_W-180,step:i,done:false}));
+const GOAL_X=LEVEL_LEN-240;
+
+// caracoles del rencor 🐌 {x patrulla}
+const snails=[1850,2750,3550,4700,5550,6450,7250].map(x=>({
+  x, x0:x-90, x1:x+90, dir:1, dead:0, t:Math.random()*6
+}));
+
+// mensajes de amor (psicología) que sueltan los bloques
+const LOVE_MSGS=[
+  "Validar no es darle la razón 💗",
+  "Detrás del enojo suele haber miedo",
+  "Nombrar la emoción ya la calma",
+  "Pausa no es abandono, es cuidado",
+  "Escucha para entender, no para responder",
+  "El rival es el problema, no tu pareja",
+  "Reparar a tiempo agranda la confianza",
+  "Pedir es más fuerte que reprochar",
+  "Un abrazo de 20 segundos regula a los dos",
+  "La curiosidad desarma la defensa",
+  "Primero conexión, después solución",
+];
+let loveIdx=0;
+const floaters=[]; // {x,y,txt,a}
+
+// ---------------- jugador ----------------
+const player={x:120,y:0,vx:0,vy:0,w:46,h:44,onGround:false,face:1,walkT:0,squash:0,coyote:0,blink:0,eatT:0,hurtT:0,airJumps:0};
+function resetPlayerY(){player.y=GROUND-player.h;}
+resetPlayerY();
+
+// Capuccina 🐱 — compañera montable (estilo Yoshi)
+// mode: 'follow' (te sigue) | 'flee' (huye tras un golpe) | 'wait' (se detiene asustada, puedes atraparla)
+const cat={active:true,mode:'follow',mounted:false,x:180,y:0,vy:0,vxh:0,onGround:true,face:1,t:0,happy:0,fleeT:0,tremor:0};
+function resetCatY(){cat.y=GROUND-30;}
+
+// ---------------- estado ----------------
+const state={cam:0,paused:true,hearts:0,finished:false,bonus:false,blocksHit:0,
+  villain:0,villainTarget:0,zoneTint:null,t:0,
+  data:{regulado:'',hecho:'',sents:[],nec:'',ped:'',frase:'',test:'',testName:'',acuerdo:''}};
+
+// ---------------- input ----------------
+const keys={l:false,r:false,j:false,jHeld:false};
+window.addEventListener('keydown',e=>{
+  if(e.code==='ArrowLeft'||e.code==='KeyA')keys.l=true;
+  if(e.code==='ArrowRight'||e.code==='KeyD')keys.r=true;
+  if(e.code==='Space'||e.code==='ArrowUp'||e.code==='KeyW'){keys.j=true;e.preventDefault();}
+});
+window.addEventListener('keyup',e=>{
+  if(e.code==='ArrowLeft'||e.code==='KeyA')keys.l=false;
+  if(e.code==='ArrowRight'||e.code==='KeyD')keys.r=false;
+  if(e.code==='Space'||e.code==='ArrowUp'||e.code==='KeyW')keys.j=false;
+});
+function bindBtn(id,on,off){
+  const el=document.getElementById(id);
+  el.addEventListener('pointerdown',e=>{e.preventDefault();initAudio();on();});
+  ['pointerup','pointerleave','pointercancel'].forEach(ev=>el.addEventListener(ev,e=>{e.preventDefault();off();}));
+}
+bindBtn('btnL',()=>keys.l=true,()=>keys.l=false);
+bindBtn('btnR',()=>keys.r=true,()=>keys.r=false);
+bindBtn('btnJump',()=>keys.j=true,()=>keys.j=false);
+
+/* =====================================================================
+   MOTOR DE AUDIO — chiptune original (compositor sinfónico 8-bit)
+   Progresión luminosa I–vi–IV–V en Do mayor, 132 BPM.
+   Modo sombra: La menor, arpegio lento (Am–F–Dm–E).
+   ===================================================================== */
+const audio={ctx:null,master:null,mode:'over',step:0,nextT:0,timer:null,muted:false,noiseBuf:null};
+const m2f=m=>440*Math.pow(2,(m-69)/12);
+const EIGHTH=60/132/2;
+
+// 4 compases de corcheas (32 pasos). 0 = silencio.
+const SONG={
+  over:{
+    mel:[76,0,79,0,81,79,76,79, 72,0,76,0,79,76,72,0, 77,0,81,0,84,81,77,81, 79,74,71,74,79,0,72,0],
+    bass:[48,0,55,0,48,0,55,0, 45,0,52,0,45,0,52,0, 41,0,48,0,41,0,48,0, 43,0,50,0,43,0,47,0],
+    hat:true, melType:'square', melGain:0.14, bassGain:0.18
+  },
+  dark:{
+    mel:[69,0,72,0,76,0,72,0, 65,0,69,0,72,0,69,0, 62,0,65,0,69,0,65,0, 64,0,68,0,71,0,68,0],
+    bass:[45,0,0,0,45,0,0,0, 41,0,0,0,41,0,0,0, 38,0,0,0,38,0,0,0, 40,0,0,0,40,0,0,0],
+    hat:false, melType:'triangle', melGain:0.16, bassGain:0.20
+  }
+};
+function initAudio(){
+  if(audio.ctx){ if(audio.ctx.state==='suspended')audio.ctx.resume(); return; }
+  const AC=window.AudioContext||window.webkitAudioContext;
+  if(!AC)return;
+  audio.ctx=new AC();
+  audio.master=audio.ctx.createGain();
+  audio.master.gain.value=0.5;
+  audio.master.connect(audio.ctx.destination);
+  // buffer de ruido para hi-hat / sfx
+  const len=audio.ctx.sampleRate*0.1;
+  audio.noiseBuf=audio.ctx.createBuffer(1,len,audio.ctx.sampleRate);
+  const d=audio.noiseBuf.getChannelData(0);
+  for(let i=0;i<len;i++)d[i]=Math.random()*2-1;
+  audio.nextT=audio.ctx.currentTime+0.05;
+  audio.timer=setInterval(scheduler,30);
+}
+function scheduler(){
+  if(!audio.ctx)return;
+  while(audio.nextT<audio.ctx.currentTime+0.12){
+    playStep(audio.step,audio.nextT);
+    audio.step=(audio.step+1)%32;
+    audio.nextT+=EIGHTH;
+  }
+}
+function tone(midi,t,dur,type,gain){
+  const o=audio.ctx.createOscillator(),g=audio.ctx.createGain();
+  o.type=type;o.frequency.value=m2f(midi);
+  g.gain.setValueAtTime(0.0001,t);
+  g.gain.exponentialRampToValueAtTime(gain,t+0.012);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  o.connect(g);g.connect(audio.master);
+  o.start(t);o.stop(t+dur+0.05);
+}
+function hat(t,gain){
+  const s=audio.ctx.createBufferSource(),g=audio.ctx.createGain(),f=audio.ctx.createBiquadFilter();
+  s.buffer=audio.noiseBuf;f.type='highpass';f.frequency.value=6000;
+  g.gain.setValueAtTime(gain,t);g.gain.exponentialRampToValueAtTime(0.0001,t+0.05);
+  s.connect(f);f.connect(g);g.connect(audio.master);
+  s.start(t);s.stop(t+0.06);
+}
+function playStep(i,t){
+  const p=SONG[audio.mode];
+  if(p.mel[i])tone(p.mel[i],t,audio.mode==='over'?0.16:0.34,p.melType,p.melGain);
+  if(p.bass[i])tone(p.bass[i],t,audio.mode==='over'?0.22:0.5,'triangle',p.bassGain);
+  if(p.hat&&i%2===0)hat(t,i%8===0?0.10:0.05);
+}
+// SFX
+function sfx(kind){
+  if(!audio.ctx)return;
+  const t=audio.ctx.currentTime;
+  if(kind==='jump'){const o=audio.ctx.createOscillator(),g=audio.ctx.createGain();
+    o.type='square';o.frequency.setValueAtTime(300,t);o.frequency.exponentialRampToValueAtTime(660,t+0.1);
+    g.gain.setValueAtTime(0.12,t);g.gain.exponentialRampToValueAtTime(0.0001,t+0.14);
+    o.connect(g);g.connect(audio.master);o.start(t);o.stop(t+0.16);}
+  else if(kind==='fruit'){tone(88,t,0.08,'square',0.14);tone(93,t+0.07,0.12,'square',0.14);}
+  else if(kind==='bump'){tone(45,t,0.09,'triangle',0.22);}
+  else if(kind==='msg'){tone(81,t,0.1,'sine',0.12);tone(85,t+0.09,0.16,'sine',0.12);}
+  else if(kind==='hatch'){[72,76,79,84].forEach((n,k)=>tone(n,t+k*0.07,0.12,'square',0.12));}
+  else if(kind==='stomp'){hat(t,0.25);tone(50,t,0.1,'triangle',0.2);}
+  else if(kind==='hurt'){[60,55,50].forEach((n,k)=>tone(n,t+k*0.08,0.1,'square',0.13));}
+  else if(kind==='dbl'){tone(76,t,0.07,'square',0.12);tone(83,t+0.05,0.1,'square',0.12);}
+  else if(kind==='goal'){[72,76,79,84,79,84,88].forEach((n,k)=>tone(n,t+k*0.09,0.14,'square',0.13));}
+}
+document.getElementById('btnMute').addEventListener('pointerdown',e=>{
+  e.preventDefault();initAudio();
+  audio.muted=!audio.muted;
+  if(audio.master)audio.master.gain.value=audio.muted?0:0.5;
+  document.getElementById('btnMute').textContent=audio.muted?'🔇':'🔊';
+});
+document.addEventListener('pointerdown',function once(){initAudio();document.removeEventListener('pointerdown',once);});
+
+// ---------------- física ----------------
+const SPEED=3.6,JUMP=-11.2,GRAV=0.52,MAXFALL=13;
+function addFloater(x,y,txt,slow){floaters.push({x,y,txt,a:1,slow:!!slow});}
+
+function physics(){
+  let ax=0;
+  if(keys.l)ax-=1; if(keys.r)ax+=1;
+  player.vx=ax*SPEED;
+  if(ax!==0){player.face=ax;player.walkT+=0.25;}else player.walkT=0;
+  player.x+=player.vx;
+  if(player.x<10)player.x=10;
+  if(player.x>LEVEL_LEN-50)player.x=LEVEL_LEN-50;
+
+  if(player.onGround){player.coyote=7;player.airJumps=1;}
+  else if(player.coyote>0)player.coyote--;
+
+  if(keys.j&&!keys.jHeld){
+    if(player.coyote>0){
+      player.vy=JUMP;player.onGround=false;player.coyote=0;player.squash=-1;sfx('jump');
+    } else if(cat.mounted&&player.airJumps>0){
+      player.vy=JUMP*0.94;player.airJumps--;player.squash=-1;cat.happy=1;sfx('dbl');
+      addFloater(player.x,player.y-14,'¡doble salto! 🐱');
+    }
+  }
+  keys.jHeld=keys.j;
+  if(!keys.j&&player.vy<-4)player.vy=-4;
+
+  player.vy+=GRAV;
+  if(player.vy>MAXFALL)player.vy=MAXFALL;
+  const prevBottom=player.y+player.h, prevTop=player.y;
+  player.y+=player.vy;
+  player.onGround=false;
+  if(player.y+player.h>=GROUND){
+    player.y=GROUND-player.h;
+    if(player.vy>2)player.squash=1;
+    player.vy=0;player.onGround=true;
+  }
+  for(const p of plats){
+    const top=p.top();
+    const wx=player.x+player.w>p.x&&player.x<p.x+p.w;
+    if(wx&&player.vy>=0&&prevBottom<=top+2&&player.y+player.h>=top){
+      player.y=top-player.h;
+      if(player.vy>2)player.squash=1;
+      player.vy=0;player.onGround=true;
+      if(p===BONUS_TOP&&!state.bonus){
+        state.bonus=true;sfx('goal');
+        addFloater(p.x+40,top-30,'⭐ ¡Cima del compromiso!');
+      }
+    }
+  }
+  // bloques ?
+  for(const b of qblocks){
+    const bx=b.x,by=GROUND-b.hAbove,bs=38;
+    const wx=player.x+player.w>bx+4&&player.x<bx+bs-4;
+    if(wx&&player.vy<0&&prevTop>=by+bs-2&&player.y<=by+bs){
+      player.y=by+bs;player.vy=1.5;
+      if(!b.used){
+        b.used=true;b.bump=1;state.blocksHit++;
+        sfx('bump');
+        fruits.push({x:bx+bs/2-9,hAbove:b.hAbove+52,taken:false,t:0,pop:true});
+        addFloater(bx+19,by-26,LOVE_MSGS[loveIdx%LOVE_MSGS.length],true);
+        loveIdx++;sfx('msg');
+      } else b.bump=0.5;
+    }
+  }
+  // Capuccina 🐱
+  if(cat.active){
+    cat.t+=0.12;cat.happy*=0.92;
+    if(cat.mounted){
+      // viaja contigo (visual bajo el corazón); nada que mover
+      cat.x=player.x;cat.y=player.y+player.h-28;
+    } else if(cat.mode==='flee'){
+      cat.fleeT++;
+      if(cat.onGround&&cat.fleeT%14===0){cat.vy=-5.5;cat.onGround=false;cat.vxh=cat.face*4.6;}
+      if(cat.fleeT>260){cat.mode='wait';cat.vxh=0;}
+    } else if(cat.mode==='wait'){
+      cat.tremor=Math.sin(cat.t*6)*1.2;
+    } else { // follow
+      const targetX=player.x-player.face*48;
+      const dx=targetX-cat.x;
+      if(Math.abs(dx)>380){cat.x=player.x-player.face*64;cat.vy=0;}
+      else if(cat.onGround&&Math.abs(dx)>46){
+        cat.vy=-6.8;cat.onGround=false;cat.vxh=Math.sign(dx)*Math.min(4.3,Math.abs(dx)*0.06);
+        cat.face=Math.sign(dx)||cat.face;
+      }
+    }
+    if(!cat.mounted&&!cat.onGround){
+      cat.vy+=GRAV*0.9;cat.x+=cat.vxh;cat.y+=cat.vy;
+      if(cat.x<10){cat.x=10;cat.face=1;}
+      if(cat.x>LEVEL_LEN-40){cat.x=LEVEL_LEN-40;cat.face=-1;}
+      if(cat.y+30>=GROUND){cat.y=GROUND-30;cat.vy=0;cat.onGround=true;cat.vxh=0;}
+    }
+    // MONTAR: caes sobre ella mientras te sigue
+    if(!cat.mounted&&cat.mode==='follow'&&player.vy>0&&
+       player.x+player.w>cat.x+4&&player.x<cat.x+30&&
+       player.y+player.h>cat.y&&player.y+player.h<cat.y+24){
+      cat.mounted=true;cat.happy=1;sfx('hatch');
+      addFloater(player.x,player.y-20,'¡Montaste a Capuccina! 🐱 doble salto activo');
+      document.getElementById('frogHud').style.display='block';
+    }
+    // ATRAPAR: la tocas mientras huye o espera
+    if(!cat.mounted&&(cat.mode==='flee'||cat.mode==='wait')&&
+       player.x+player.w>cat.x&&player.x<cat.x+34&&
+       player.y+player.h>cat.y-6){
+      cat.mode='follow';cat.fleeT=0;cat.happy=1;sfx('fruit');
+      addFloater(cat.x,cat.y-22,'¡La atrapaste! 💗 Capuccina confía de nuevo');
+    }
+  }
+  // frutitas
+  for(const f of fruits){
+    if(f.taken)continue;
+    const fy=GROUND-f.hAbove;
+    if(player.x+player.w>f.x&&player.x<f.x+20&&player.y+player.h>fy&&player.y<fy+20){
+      f.taken=true;state.hearts++;player.eatT=1;sfx('fruit');
+      document.getElementById('heartsCount').textContent=state.hearts;
+    }
+  }
+  // caracoles
+  if(player.hurtT>0)player.hurtT--;
+  for(const s of snails){
+    if(s.dead>0){s.dead++;continue;}
+    s.t+=0.08;
+    s.x+=s.dir*0.55;
+    if(s.x<s.x0)s.dir=1;
+    if(s.x>s.x1)s.dir=-1;
+    const sw=34,sh=24,sy=GROUND-sh;
+    const overlapX=player.x+player.w>s.x+4&&player.x<s.x+sw-4;
+    const overlapY=player.y+player.h>sy&&player.y<sy+sh;
+    if(overlapX&&overlapY){
+      if(player.vy>0&&player.y+player.h-sy<14){
+        s.dead=1;player.vy=-7;sfx('stomp');
+        addFloater(s.x,sy-18,'rencor superado ✨');
+      } else if(player.hurtT===0){
+        player.hurtT=70;sfx('hurt');
+        player.x-=player.face*34;player.vy=-4;player.onGround=false;
+        if(cat.mounted||cat.mode==='follow'){
+          cat.mounted=false;cat.mode='flee';cat.fleeT=0;
+          cat.x=player.x;cat.y=GROUND-30;cat.onGround=true;
+          cat.face=player.face* -1||-1;
+          document.getElementById('frogHud').style.display='none';
+          addFloater(player.x,player.y-20,'¡Capuccina se asustó! 🐱💨 ¡atrápala!');
+        } else {
+          addFloater(player.x,player.y-20,'¡ay! el caracol del rencor 🐌');
+        }
+      }
+    }
+  }
+  // checkpoints
+  for(const c of checkpoints){
+    if(!c.done&&player.x+player.w/2>=c.x){c.done=true;openStep(c.step);}
+  }
+  if(!state.finished&&player.x+player.w/2>=GOAL_X){
+    state.finished=true;sfx('goal');openFinal();
+  }
+  player.squash*=0.85;player.eatT*=0.9;
+  if(Math.random()<0.008)player.blink=6;
+  if(player.blink>0)player.blink--;
+  // floaters: los mensajes de amor (slow) duran ~8s diluyéndose; los demás ~4s
+  for(let i=floaters.length-1;i>=0;i--){
+    const f=floaters[i];
+    f.y-=f.slow?0.12:0.22;
+    f.a-=f.slow?0.0021:0.0042;
+    if(f.a<=0)floaters.splice(i,1);
+  }
+}
+
+// ---------------- render ----------------
+function lerpColor(a,b,t){
+  const pa=parseInt(a.slice(1),16),pb=parseInt(b.slice(1),16);
+  const r=Math.round(((pa>>16)&255)+(((pb>>16)&255)-((pa>>16)&255))*t);
+  const g=Math.round(((pa>>8)&255)+(((pb>>8)&255)-((pa>>8)&255))*t);
+  const bl=Math.round((pa&255)+((pb&255)-(pa&255))*t);
+  return `rgb(${r},${g},${bl})`;
+}
+const zoneAt=x=>Math.max(0,Math.min(ZONES.length-1,Math.floor(x/ZONE_W)));
+function rr(x,y,w,h,r){cx.beginPath();cx.moveTo(x+r,y);cx.arcTo(x+w,y,x+w,y+h,r);
+  cx.arcTo(x+w,y+h,x,y+h,r);cx.arcTo(x,y+h,x,y,r);cx.arcTo(x,y,x+w,y,r);cx.closePath();}
+
+function render(){
+  const vw=window.innerWidth,vh=window.innerHeight;
+  let target=player.x-vw*0.38;
+  target=Math.max(0,Math.min(LEVEL_LEN-vw,target));
+  state.cam+=(target-state.cam)*0.12;
+  const cam=state.cam;
+
+  const zi=zoneAt(player.x),zN=Math.min(ZONES.length-1,zi+1);
+  const tz=Math.max(0,Math.min(1,(player.x-zi*ZONE_W)/ZONE_W));
+  const blend=tz>0.8?(tz-0.8)/0.2:0;
+  const sky1=lerpColor(ZONES[zi].sky1,ZONES[zN].sky1,blend);
+  const sky2=lerpColor(ZONES[zi].sky2,ZONES[zN].sky2,blend);
+  const hillC=lerpColor(ZONES[zi].hill,ZONES[zN].hill,blend);
+
+  const g=cx.createLinearGradient(0,0,0,vh);
+  g.addColorStop(0,sky1);g.addColorStop(1,sky2);
+  cx.fillStyle=g;cx.fillRect(0,0,vw,vh);
+
+  if(state.zoneTint&&player.x>ZONE_W*5-200){
+    cx.fillStyle=state.zoneTint;cx.globalAlpha=0.10;cx.fillRect(0,0,vw,vh);cx.globalAlpha=1;
+  }
+
+  cx.fillStyle='rgba(255,255,255,.85)';
+  for(let i=0;i<14;i++){
+    const cxp=((i*620-cam*0.3)%(LEVEL_LEN*0.4)+LEVEL_LEN*0.4)%(LEVEL_LEN*0.4)-100;
+    if(cxp>-160&&cxp<vw+60)cloud(cxp,50+(i%4)*46,0.8+(i%3)*0.25);
+  }
+  cx.fillStyle=hillC;
+  for(let i=0;i<26;i++){
+    const hx=i*520-cam*0.55;
+    if(hx>-320&&hx<vw+320){cx.beginPath();cx.arc(hx,GROUND+38,150+(i%3)*60,Math.PI,0);cx.fill();}
+  }
+  cx.fillStyle='#8a6e4b';cx.fillRect(0,GROUND,vw,vh-GROUND);
+  cx.fillStyle='#6fae6b';cx.fillRect(0,GROUND,vw,14);
+  cx.fillStyle='rgba(255,255,255,.18)';
+  for(let i=0;i<Math.ceil(vw/26)+2;i++)cx.fillRect(i*26-(cam%26),GROUND+2,12,3);
+
+  cx.save();cx.translate(-cam,0);
+
+  for(const p of plats){
+    if(p.x+p.w<cam-40||p.x>cam+vw+40)continue;
+    const top=p.top();
+    cx.fillStyle=(p===BONUS_TOP)?'#caa84e':'#a9824f';
+    rr(p.x,top,p.w,p.h,6);cx.fill();
+    cx.fillStyle=(p===BONUS_TOP)?'#ffd56b':'#7ec07a';
+    rr(p.x,top,p.w,7,4);cx.fill();
+  }
+  for(const b of qblocks){
+    const bs=38,bx=b.x,by=GROUND-b.hAbove-(b.bump>0.05?Math.sin(b.bump*Math.PI)*8:0);
+    b.bump*=0.85;
+    if(bx+bs<cam-40||bx>cam+vw+40)continue;
+    cx.fillStyle=b.used?'#cfc6b5':'#f2b234';
+    rr(bx,by,bs,bs,7);cx.fill();
+    cx.strokeStyle='rgba(0,0,0,.25)';cx.lineWidth=2;rr(bx,by,bs,bs,7);cx.stroke();
+    cx.fillStyle=b.used?'#9a917f':'#7a4d05';
+    cx.font='bold 20px Inter';cx.textAlign='center';cx.textBaseline='middle';
+    cx.fillText(b.used?'·':'?',bx+bs/2,by+bs/2+1);
+  }
+  for(const f of fruits){
+    if(f.taken)continue;
+    f.t+=0.06;
+    const fy=GROUND-f.hAbove+Math.sin(f.t)*4;
+    if(f.x+20<cam-40||f.x>cam+vw+40)continue;
+    drawHeartShape(f.x+10,fy+10,f.bonus?11:9,f.bonus?'#f2b234':'#e0607a',f.bonus?'#a06a00':'#b23a52');
+  }
+  for(const s of snails)drawSnail(s,cam,vw);
+  for(const c of checkpoints){
+    if(c.x<cam-60||c.x>cam+vw+60)continue;
+    cx.fillStyle='#5a5142';cx.fillRect(c.x,GROUND-120,5,120);
+    cx.fillStyle=c.done?'#9aa39a':'#8a2f3d';
+    cx.beginPath();cx.moveTo(c.x+5,GROUND-120);cx.lineTo(c.x+48,GROUND-106);cx.lineTo(c.x+5,GROUND-92);
+    cx.closePath();cx.fill();
+  }
+  drawCastle(GOAL_X);
+  if(cat.active&&!cat.mounted)drawCat(cat.x,cat.y,1,false);
+  drawPlayer();
+
+  // floaters (mensajes flotantes con píldora de alto contraste)
+  cx.font='bold 12px Inter';cx.textAlign='center';cx.textBaseline='middle';
+  for(const f of floaters){
+    const w=cx.measureText(f.txt).width+18;
+    cx.globalAlpha=Math.max(0,f.a);
+    cx.fillStyle='rgba(255,255,255,.95)';
+    rr(f.x-w/2,f.y-12,w,24,12);cx.fill();
+    cx.strokeStyle='#1a1f2b';cx.lineWidth=1.5;rr(f.x-w/2,f.y-12,w,24,12);cx.stroke();
+    cx.fillStyle='#1a1f2b';cx.fillText(f.txt,f.x,f.y+1);
+    cx.globalAlpha=1;
+  }
+  cx.restore();
+
+  // villano: Sapo de la Sombra + nubes oscuras (espacio de pantalla, fade gradual)
+  state.villain+=(state.villainTarget-state.villain)*0.025;
+  if(state.villain>0.01)drawVillain(vw,vh,state.villain);
+}
+
+function cloud(x,y,s){cx.beginPath();cx.arc(x,y,18*s,0,7);cx.arc(x+20*s,y-8*s,14*s,0,7);
+  cx.arc(x+40*s,y,16*s,0,7);cx.fill();}
+function drawHeartShape(cxp,cyp,r,fill,stroke){
+  cx.save();cx.translate(cxp,cyp);cx.beginPath();
+  cx.moveTo(0,r*0.9);
+  cx.bezierCurveTo(-r*1.4,-r*0.1,-r*0.7,-r*1.1,0,-r*0.35);
+  cx.bezierCurveTo(r*0.7,-r*1.1,r*1.4,-r*0.1,0,r*0.9);
+  cx.fillStyle=fill;cx.fill();
+  if(stroke){cx.strokeStyle=stroke;cx.lineWidth=1.5;cx.stroke();}
+  cx.restore();
+}
+function drawCastle(x){
+  cx.fillStyle='#cdb6a0';cx.fillRect(x,GROUND-130,150,130);
+  cx.fillStyle='#b89a7e';
+  for(let i=0;i<4;i++)cx.fillRect(x+8+i*38,GROUND-150,22,22);
+  cx.fillStyle='#7a3d2c';rr(x+55,GROUND-58,40,58,8);cx.fill();
+  drawHeartShape(x+75,GROUND-100,15,'#8a2f3d',null);
+  cx.fillStyle='#5a5142';cx.fillRect(x+70,GROUND-205,4,58);
+  cx.fillStyle='#f2b234';
+  cx.beginPath();cx.moveTo(x+74,GROUND-205);cx.lineTo(x+112,GROUND-193);cx.lineTo(x+74,GROUND-181);
+  cx.closePath();cx.fill();
+}
+function drawCat(x,y,scale,riding){
+  // Capuccina: calicó — parches naranjo y gris-pardo atigrado, pecho/patas blancas, ojos ámbar
+  const hop=cat.onGround||riding?0:Math.min(6,-cat.vy);
+  const trot=(cat.mode==='follow'&&cat.onGround)||riding?Math.sin(cat.t*4)*4:0;
+  const trem=cat.mode==='wait'?cat.tremor:0;
+  cx.save();cx.translate(x+17+trem,y+30);cx.scale((cat.face>=0?1:-1)*scale,scale);
+  // cola atigrada con punta oscura
+  cx.lineCap='round';
+  const tailW=Math.sin(cat.t*2)*4;
+  cx.strokeStyle='#9a8a6a';cx.lineWidth=5;
+  cx.beginPath();cx.moveTo(-14,-12);cx.quadraticCurveTo(-24,-20+tailW,-26,-30+tailW);cx.stroke();
+  cx.strokeStyle='#5e5142';cx.lineWidth=5;
+  cx.beginPath();cx.moveTo(-25,-26+tailW);cx.lineTo(-26,-30+tailW);cx.stroke();
+  // patas (trote)
+  cx.strokeStyle='#f5efe6';cx.lineWidth=4;
+  cx.beginPath();cx.moveTo(-8,-6);cx.lineTo(-8-trot*0.5,0);cx.stroke();
+  cx.beginPath();cx.moveTo(8,-6);cx.lineTo(8+trot*0.5,0);cx.stroke();
+  cx.beginPath();cx.moveTo(-3,-6);cx.lineTo(-3+trot*0.5,0);cx.stroke();
+  cx.beginPath();cx.moveTo(3,-6);cx.lineTo(3-trot*0.5,0);cx.stroke();
+  // cuerpo blanco base
+  cx.fillStyle='#f7f1e8';
+  cx.beginPath();cx.ellipse(0,-13,16,9.5,0,0,7);cx.fill();
+  // parche naranjo (lomo delantero)
+  cx.fillStyle='#d98a4a';
+  cx.beginPath();cx.ellipse(6,-17,8,5.5,-0.2,0,7);cx.fill();
+  // parche gris-pardo atigrado (grupa)
+  cx.fillStyle='#8a7a5e';
+  cx.beginPath();cx.ellipse(-8,-16,7.5,5.5,0.2,0,7);cx.fill();
+  cx.strokeStyle='#5e5142';cx.lineWidth=1.4;
+  cx.beginPath();cx.moveTo(-12,-19);cx.lineTo(-9,-13);cx.stroke();
+  cx.beginPath();cx.moveTo(-8,-20);cx.lineTo(-5,-14);cx.stroke();
+  cx.strokeStyle='#a8642a';
+  cx.beginPath();cx.moveTo(4,-21);cx.lineTo(6,-15);cx.stroke();
+  cx.beginPath();cx.moveTo(8,-20);cx.lineTo(10,-15);cx.stroke();
+  // contorno suave
+  cx.strokeStyle='#bfae93';cx.lineWidth=1.5;
+  cx.beginPath();cx.ellipse(0,-13,16,9.5,0,0,7);cx.stroke();
+  // cabeza
+  cx.fillStyle='#f7f1e8';
+  cx.beginPath();cx.arc(14,-20,8.5,0,7);cx.fill();
+  // parche naranjo sobre ojo/oreja derecha y gris sobre la izquierda (máscara calicó)
+  cx.fillStyle='#d98a4a';
+  cx.beginPath();cx.ellipse(17,-25,5,4.5,0.3,0,7);cx.fill();
+  cx.fillStyle='#8a7a5e';
+  cx.beginPath();cx.ellipse(10.5,-25.5,4.5,4,-0.3,0,7);cx.fill();
+  cx.strokeStyle='#bfae93';cx.lineWidth=1.3;
+  cx.beginPath();cx.arc(14,-20,8.5,0,7);cx.stroke();
+  // orejas con interior rosado
+  cx.fillStyle='#8a7a5e';
+  cx.beginPath();cx.moveTo(7.5,-25);cx.lineTo(9,-33);cx.lineTo(13,-27);cx.closePath();cx.fill();
+  cx.fillStyle='#d98a4a';
+  cx.beginPath();cx.moveTo(15,-27);cx.lineTo(18.5,-33.5);cx.lineTo(21,-26);cx.closePath();cx.fill();
+  cx.fillStyle='#e8a8a8';
+  cx.beginPath();cx.moveTo(9.4,-26.4);cx.lineTo(10.1,-30.6);cx.lineTo(12.2,-27.2);cx.closePath();cx.fill();
+  cx.beginPath();cx.moveTo(16.4,-27.2);cx.lineTo(18.3,-31.4);cx.lineTo(19.6,-26.8);cx.closePath();cx.fill();
+  // ojos ámbar (redondos si huye, normales si no)
+  const scared=cat.mode==='flee'||cat.mode==='wait';
+  cx.fillStyle='#d9a13b';
+  cx.beginPath();cx.ellipse(11.5,-20.5,2.4,scared?2.6:2.1,0,0,7);cx.fill();
+  cx.beginPath();cx.ellipse(17.5,-20.5,2.4,scared?2.6:2.1,0,0,7);cx.fill();
+  cx.fillStyle='#1a1f2b';
+  cx.beginPath();cx.ellipse(11.5,-20.5,scared?1.7:0.8,scared?1.9:1.7,0,0,7);cx.fill();
+  cx.beginPath();cx.ellipse(17.5,-20.5,scared?1.7:0.8,scared?1.9:1.7,0,0,7);cx.fill();
+  // nariz rosada + boca
+  cx.fillStyle='#e89aa4';
+  cx.beginPath();cx.moveTo(20.5,-17.5);cx.lineTo(22.5,-17.5);cx.lineTo(21.5,-16);cx.closePath();cx.fill();
+  cx.strokeStyle='#9c8c78';cx.lineWidth=1;
+  cx.beginPath();cx.moveTo(21.5,-16);cx.quadraticCurveTo(21,-14.5,19.5,-14.8);cx.stroke();
+  // bigotes
+  cx.strokeStyle='rgba(255,255,255,.85)';cx.lineWidth=0.9;
+  cx.beginPath();cx.moveTo(20,-17);cx.lineTo(26,-18.5);cx.stroke();
+  cx.beginPath();cx.moveTo(20,-16);cx.lineTo(26,-16);cx.stroke();
+  // feliz tras doble salto / atraparla
+  if(cat.happy>0.3){
+    cx.fillStyle='rgba(255,120,140,.5)';
+    cx.beginPath();cx.arc(10,-16.5,1.8,0,7);cx.fill();
+    cx.beginPath();cx.arc(18.5,-16.5,1.8,0,7);cx.fill();
+  }
+  cx.restore();
+}
+function drawSnail(s,cam,vw){
+  const sw=34;
+  if(s.x+sw<cam-40||s.x>cam+vw+40)return;
+  if(s.dead>0){
+    if(s.dead<28){
+      cx.globalAlpha=1-s.dead/28;
+      cx.fillStyle='#9c8d7a';
+      cx.beginPath();cx.ellipse(s.x+17,GROUND-5,16,5,0,0,7);cx.fill();
+      cx.globalAlpha=1;
+    }
+    return;
+  }
+  cx.save();cx.translate(s.x+17,GROUND);
+  cx.scale(s.dir,1);
+  // cuerpo
+  cx.fillStyle='#c8b48f';
+  cx.beginPath();cx.ellipse(2,-7,16,7,0,0,7);cx.fill();
+  // caparazón espiral
+  cx.fillStyle='#8a5a6e';
+  cx.beginPath();cx.arc(-3,-15,10.5,0,7);cx.fill();
+  cx.strokeStyle='#5e3a4c';cx.lineWidth=2;
+  cx.beginPath();cx.arc(-3,-15,10.5,0,7);cx.stroke();
+  cx.beginPath();cx.arc(-3,-15,6,0.5,5.6);cx.stroke();
+  cx.beginPath();cx.arc(-2,-14,2.5,1,5.6);cx.stroke();
+  // cabeza y antenas
+  cx.fillStyle='#c8b48f';
+  cx.beginPath();cx.arc(14,-11,5.5,0,7);cx.fill();
+  cx.strokeStyle='#9c8d7a';cx.lineWidth=2;cx.lineCap='round';
+  const ant=Math.sin(s.t)*1.5;
+  cx.beginPath();cx.moveTo(15,-15);cx.lineTo(17+ant,-22);cx.stroke();
+  cx.beginPath();cx.moveTo(12,-15);cx.lineTo(12+ant,-22);cx.stroke();
+  cx.fillStyle='#1a1f2b';
+  cx.beginPath();cx.arc(17+ant,-22,1.8,0,7);cx.fill();
+  cx.beginPath();cx.arc(12+ant,-22,1.8,0,7);cx.fill();
+  // ceño (es el rencor)
+  cx.strokeStyle='#5e3a4c';cx.lineWidth=1.6;
+  cx.beginPath();cx.moveTo(12,-12);cx.lineTo(16,-11);cx.stroke();
+  cx.restore();
+}
+function drawVillain(vw,vh,a){
+  // oscurecimiento gradual del cielo
+  const g=cx.createLinearGradient(0,0,0,vh*0.7);
+  g.addColorStop(0,`rgba(18,22,30,${0.62*a})`);
+  g.addColorStop(1,'rgba(18,22,30,0)');
+  cx.fillStyle=g;cx.fillRect(0,0,vw,vh);
+  // nubes oscuras que entran desde arriba
+  cx.fillStyle=`rgba(38,44,56,${0.85*a})`;
+  const yOff=(1-a)*-60;
+  for(let i=0;i<6;i++){
+    const nx=(i*vw/5)+Math.sin(state.t*0.0006+i)*14;
+    cloudAt(nx,28+((i%3)*18)+yOff,1.5+(i%2)*0.5);
+  }
+  // Sapo de la Sombra (silueta con ojos ámbar)
+  const sx=vw/2, sy=86+yOff*0.6;
+  cx.save();cx.translate(sx,sy);cx.globalAlpha=a;
+  cx.fillStyle='#222d22';
+  cx.beginPath();cx.ellipse(0,18,86,52,0,0,7);cx.fill();      // cuerpo
+  cx.beginPath();cx.ellipse(-58,38,26,16,0,0,7);cx.fill();    // ancas
+  cx.beginPath();cx.ellipse(58,38,26,16,0,0,7);cx.fill();
+  cx.beginPath();cx.arc(-34,-22,17,0,7);cx.fill();            // bultos de ojos
+  cx.beginPath();cx.arc(34,-22,17,0,7);cx.fill();
+  // verrugas
+  cx.fillStyle='#2e3b2e';
+  [[-20,2],[14,10],[36,0],[-44,14],[4,-12]].forEach(p=>{
+    cx.beginPath();cx.arc(p[0],p[1],4,0,7);cx.fill();
+  });
+  // ojos ámbar con pulso suave
+  const pulse=0.65+Math.sin(state.t*0.004)*0.2;
+  cx.fillStyle=`rgba(242,178,52,${pulse})`;
+  cx.beginPath();cx.ellipse(-34,-22,7,9,0,0,7);cx.fill();
+  cx.beginPath();cx.ellipse(34,-22,7,9,0,0,7);cx.fill();
+  cx.fillStyle='#14181f';
+  cx.beginPath();cx.ellipse(-34,-21,2.6,5,0,0,7);cx.fill();
+  cx.beginPath();cx.ellipse(34,-21,2.6,5,0,0,7);cx.fill();
+  // boca
+  cx.strokeStyle='#141d14';cx.lineWidth=3;
+  cx.beginPath();cx.moveTo(-46,12);cx.quadraticCurveTo(0,22,46,12);cx.stroke();
+  cx.restore();cx.globalAlpha=1;
+  function cloudAt(x,y,s){cx.beginPath();cx.arc(x,y,20*s,0,7);cx.arc(x+24*s,y-9*s,15*s,0,7);
+    cx.arc(x+48*s,y,18*s,0,7);cx.fill();}
+}
+function drawPlayer(){
+  const p=player;
+  if(p.hurtT>0&&Math.floor(p.hurtT/5)%2===0)return; // parpadeo al herirse
+  if(cat.mounted){
+    cat.face=p.face;cat.t+=0.08;
+    drawCat(p.x-2,p.y+p.h-30,1.12,true);
+  }
+  const sq=p.squash;
+  const sx=1+(sq>0?sq*0.18:sq*0.12), sy=1-(sq>0?sq*0.22:sq*-0.15);
+  const legSwing=p.onGround&&(keys.l||keys.r)?Math.sin(p.walkT*2)*7:(p.onGround?0:5);
+  cx.save();
+  cx.translate(p.x+p.w/2,p.y+p.h-(cat.mounted?14:0));
+  cx.scale(sx,sy);cx.translate(0,-p.h);
+  cx.strokeStyle='#5a3a40';cx.lineWidth=4.5;cx.lineCap='round';
+  cx.beginPath();cx.moveTo(-8,p.h-12);cx.lineTo(-8+legSwing*0.4,p.h+1);cx.stroke();
+  cx.beginPath();cx.moveTo(8,p.h-12);cx.lineTo(8-legSwing*0.4,p.h+1);cx.stroke();
+  cx.fillStyle='#8a2f3d';
+  cx.beginPath();cx.ellipse(-8+legSwing*0.4,p.h+2,7,4,0,0,7);cx.fill();
+  cx.beginPath();cx.ellipse(8-legSwing*0.4,p.h+2,7,4,0,0,7);cx.fill();
+  drawHeartBody(0,p.h/2-6,24*(1+p.eatT*0.18));
+  cx.fillStyle='#2a1a1e';
+  const ey=p.h/2-12,eo=p.face*3;
+  if(p.blink>0){cx.fillRect(-9+eo,ey,6,2);cx.fillRect(4+eo,ey,6,2);}
+  else{
+    cx.beginPath();cx.arc(-6+eo,ey,3.2,0,7);cx.fill();
+    cx.beginPath();cx.arc(7+eo,ey,3.2,0,7);cx.fill();
+    cx.fillStyle='#fff';
+    cx.beginPath();cx.arc(-5+eo,ey-1,1.1,0,7);cx.fill();
+    cx.beginPath();cx.arc(8+eo,ey-1,1.1,0,7);cx.fill();
+  }
+  cx.fillStyle='rgba(255,120,140,.55)';
+  cx.beginPath();cx.arc(-13+eo*0.5,ey+7,3.4,0,7);cx.fill();
+  cx.beginPath();cx.arc(14+eo*0.5,ey+7,3.4,0,7);cx.fill();
+  cx.strokeStyle='#2a1a1e';cx.lineWidth=2;
+  if(p.eatT>0.25){cx.fillStyle='#5a2630';cx.beginPath();cx.arc(eo,ey+9,4.5,0,7);cx.fill();}
+  else{cx.beginPath();cx.arc(eo,ey+6,6,0.25*Math.PI,0.75*Math.PI);cx.stroke();}
+  cx.restore();
+}
+function drawHeartBody(x,y,r){
+  cx.save();cx.translate(x,y);cx.beginPath();
+  cx.moveTo(0,r*0.95);
+  cx.bezierCurveTo(-r*1.5,-r*0.05,-r*0.78,-r*1.15,0,-r*0.38);
+  cx.bezierCurveTo(r*0.78,-r*1.15,r*1.5,-r*0.05,0,r*0.95);
+  const grad=cx.createLinearGradient(0,-r,0,r);
+  grad.addColorStop(0,'#f08aa0');grad.addColorStop(1,'#d6516e');
+  cx.fillStyle=grad;cx.fill();
+  cx.strokeStyle='#9c3148';cx.lineWidth=2.5;cx.stroke();
+  cx.fillStyle='rgba(255,255,255,.45)';
+  cx.beginPath();cx.ellipse(-r*0.45,-r*0.45,r*0.22,r*0.34,-0.5,0,7);cx.fill();
+  cx.restore();
+}
+
+// ---------------- loop ----------------
+resetCatY();
+let last=0;
+function loop(ts){
+  if(!last)last=ts;
+  let dt=ts-last;last=ts;
+  if(dt>50)dt=50;
+  state.t+=dt;
+  if(!state.paused)physics();
+  render();
+  document.getElementById('stepLabel').textContent=ZONES[zoneAt(player.x)].name;
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+/* ============== OVERLAYS — el protocolo (con sombra y música) ============== */
+const overlay=document.getElementById('overlay');
+const panel=document.getElementById('panel');
+function show(html){
+  panel.innerHTML=html;overlay.classList.add('show');state.paused=true;
+  state.villainTarget=1;audio.mode='dark';
+}
+function hide(){
+  overlay.classList.remove('show');state.paused=false;
+  state.villainTarget=0;audio.mode='over';
+}
+
+const SENTIMIENTOS=["miedo","tristeza","soledad","rabia","vergüenza","inseguridad","que no soy prioridad","que no cuento contigo"];
+const HECHOS=["llegaste tarde sin avisar","dijiste algo que me dolió","no cumpliste algo acordado","decidiste sin contar conmigo","sentí que no me escuchabas","estuviste distante"];
+const NECESIDADES=["saber que cuento contigo","sentirme prioridad","ser escuchado/a de verdad","que respetemos lo acordado","claridad","sentirme considerado/a"];
+const PEDIDOS=["que me avises con un mensaje","que lo hablemos antes de decidir","una disculpa","repetirlo con calma","tiempo juntos esta semana","que solo me escuches"];
+const ACUERDOS=["Si alguien llega tarde, avisa con un mensaje","'Pausa' detiene cualquier discusión 20 min","Lo que nos afecta a ambos se conversa antes","Un momento solo de nosotros cada semana","Primero validar, después los hechos"];
+
+function chipsHtml(id,arr){return `<div class="chips" id="${id}">`+arr.map(t=>`<button class="chip" onclick="pick(this,'${id}')">${t}</button>`).join('')+`</div>`;}
+function getSel(id){return [...document.getElementById(id).children].filter(c=>c.classList.contains('sel')).map(c=>c.textContent);}
+window.pick=function(el,id){
+  const multi=id==='cSent';
+  const c=document.getElementById(id);
+  if(multi){
+    if(el.classList.contains('sel'))el.classList.remove('sel');
+    else{const s=[...c.children].filter(x=>x.classList.contains('sel'));if(s.length>=2)s[0].classList.remove('sel');el.classList.add('sel');}
+  }else{[...c.children].forEach(x=>x.classList.remove('sel'));el.classList.add('sel');}
+  validateStep();
+};
+let currentValidator=null;
+function validateStep(){if(currentValidator)currentValidator();}
+
+function openStep(i){
+  if(i===0)stepCuerpo();
+  else if(i===1)stepEscucha();
+  else if(i===2)stepEmocion();
+  else if(i===3)stepFrase();
+  else if(i===4)stepTest();
+  else if(i===5)stepAcuerdo();
+}
+function stepCuerpo(){
+  currentValidator=null;
+  show(`
+    <div class="eyebrow">🚩 Checkpoint 1 · Tu cuerpo primero — la Sombra acecha</div>
+    <h2>¿Cómo estás ahora mismo?</h2>
+    <p class="lead">El Sapo de la Sombra crece con el desborde. Sé honesto: no hay respuesta mala.</p>
+    <button class="opt" onclick="breathe()">🔥 Acelerado: quiero gritar, ganar o irme<small>Respiremos: así la Sombra se encoge.</small></button>
+    <button class="opt" onclick="reg('tenso')">😮‍💨 Tenso, pero puedo hablar</button>
+    <button class="opt" onclick="reg('calma')">🙂 Relativamente en calma</button>
+  `);
+}
+window.reg=function(v){state.data.regulado=v;hide();};
+window.breathe=function(){
+  show(`
+    <div class="eyebrow">Pausa breve</div>
+    <h2>Tres respiraciones con el círculo</h2>
+    <p class="lead">Inhala cuando crece (4 seg) · exhala cuando se encoge (6 seg). En la vida real: pausa de 20 minutos con hora de retorno.</p>
+    <div class="breath">💗</div>
+    <button class="btn primary" onclick="reg('regulado')">Listo, la Sombra retrocede</button>
+  `);
+};
+function stepEscucha(){
+  show(`
+    <div class="eyebrow">🚩 Checkpoint 2 · Escuchar</div>
+    <h2>Quien escucha: tu único trabajo es entender</h2>
+    <p class="lead">Quien siente el malestar habla primero. Marca solo lo que de verdad cumpliste:</p>
+    <div class="check" onclick="ck(this)"><div class="box">✓</div><span>Dejé que termine sin interrumpir</span></div>
+    <div class="check" onclick="ck(this)"><div class="box">✓</div><span>Pregunté qué fue exactamente lo que dolió</span></div>
+    <div class="check" onclick="ck(this)"><div class="box">✓</div><span>Busqué la necesidad detrás del enojo</span></div>
+    <div class="check" onclick="ck(this)"><div class="box">✓</div><span>Validé: "tiene sentido que te sintieras así"</span></div>
+    <button class="btn primary" id="bEsc" disabled onclick="hide()">Continuar el camino</button>
+  `);
+}
+window.ck=function(el){
+  el.classList.toggle('on');
+  const all=[...panel.querySelectorAll('.check')];
+  document.getElementById('bEsc').disabled=!all.every(c=>c.classList.contains('on'));
+};
+function stepEmocion(){
+  show(`
+    <div class="eyebrow">🚩 Checkpoint 3 · El hecho y la emoción</div>
+    <h2>¿Qué pasó y qué sentiste?</h2>
+    <div class="grp-label">El hecho (elige uno):</div>
+    ${chipsHtml('cHecho',HECHOS)}
+    <input class="otro" id="hechoOtro" placeholder="✏️ Otra cosa (opcional)" oninput="validateStep()">
+    <div class="grp-label">Lo que sentiste (hasta dos):</div>
+    ${chipsHtml('cSent',SENTIMIENTOS)}
+    <button class="btn primary" id="bEmo" disabled onclick="saveEmocion()">Continuar el camino</button>
+  `);
+  currentValidator=function(){
+    const ok=(getSel('cHecho').length||document.getElementById('hechoOtro').value.trim())&&getSel('cSent').length;
+    document.getElementById('bEmo').disabled=!ok;
+  };
+}
+window.saveEmocion=function(){
+  state.data.hecho=document.getElementById('hechoOtro').value.trim()||getSel('cHecho')[0];
+  state.data.sents=getSel('cSent');
+  currentValidator=null;hide();
+};
+function stepFrase(){
+  show(`
+    <div class="eyebrow">🚩 Checkpoint 4 · La frase mágica</div>
+    <h2>¿Qué necesitas y qué pides?</h2>
+    <div class="grp-label">Necesito (una):</div>
+    ${chipsHtml('cNec',NECESIDADES)}
+    <div class="grp-label">Mi pedido concreto (uno):</div>
+    ${chipsHtml('cPed',PEDIDOS)}
+    <button class="btn rosa" id="bFra" disabled onclick="makeFrase()">Armar mi frase ✨</button>
+    <div id="fraseBox" style="display:none;"></div>
+  `);
+  currentValidator=function(){
+    document.getElementById('bFra').disabled=!(getSel('cNec').length&&getSel('cPed').length);
+  };
+}
+window.makeFrase=function(){
+  state.data.nec=getSel('cNec')[0];state.data.ped=getSel('cPed')[0];
+  const s=state.data.sents,st=s.length===2?s[0]+' y '+s[1]:s[0];
+  state.data.frase=`Cuando ${state.data.hecho}, sentí ${st}. Lo que necesito es ${state.data.nec}. ¿Podrías ${state.data.ped}?`;
+  sfx('msg');
+  const box=document.getElementById('fraseBox');
+  box.style.display='block';
+  box.innerHTML=`<div class="frase">"${state.data.frase}"</div>
+    <p class="lead" style="margin-top:8px;">Léela en voz alta, mirándole. La frase es luz: la Sombra la odia.</p>
+    <button class="btn primary" onclick="closeFrase()">Continuar el camino</button>`;
+  box.scrollIntoView({behavior:'smooth'});
+};
+window.closeFrase=function(){currentValidator=null;hide();};
+function stepTest(){
+  show(`
+    <div class="eyebrow">🚩 Checkpoint 5 · El test de responsabilidad</div>
+    <h2>Respondan juntos, con honestidad</h2>
+    <div id="q1b">
+      <p class="lead"><b>1.</b> ¿Hubo una acción u omisión concreta de la otra persona?</p>
+      <button class="opt" onclick="ansT(1,true)">Sí, hubo una conducta concreta</button>
+      <button class="opt" onclick="ansT(1,false)">No: nace de una interpretación, recuerdo o temor</button>
+    </div>
+    <div id="q2b" style="display:none;">
+      <p class="lead"><b>2.</b> ¿Esa conducta fue descuidada, hiriente o incumplió un acuerdo?</p>
+      <button class="opt" onclick="ansT(2,true)">Sí: descuido, daño o incumplimiento</button>
+      <button class="opt" onclick="ansT(2,false)">No: actuó con respeto, pero igual dolió</button>
+    </div>
+    <div id="resBox"></div>
+  `);
+}
+window.ansT=function(q,yes){
+  if(q===1){
+    if(yes)document.getElementById('q2b').style.display='block';
+    else testResult('azul');
+  }else testResult(yes?'verde':'ambar');
+};
+function testResult(r){
+  state.data.test=r;
+  const cfg={
+    verde:{n:'🟢 Responsabilidad plena — reparar',tint:'#1d4a35',h:'🟢 Responsabilidad plena',
+      p:'Le corresponde asumirla completa: reconocer, disculparse <b>sin "pero"</b> y cambiar la conducta.',
+      g:'"Hice X y eso te dolió. Perdón. La próxima vez haré Y."'},
+    ambar:{n:'🟡 Zona compartida — sostener y acompañar',tint:'#8a6a1a',h:'🟡 Zona compartida',
+      p:'No hubo falta, pero la relación pide presencia: acompañar <b>sin culpa y sin retractarse</b> de lo legítimo.',
+      g:'"No voy a cambiar mi decisión, pero no estás sola con lo que sientes."'},
+    azul:{n:'🔵 La emoción es de quien la siente — acompañar',tint:'#27405e',h:'🔵 La emoción es de quien la siente',
+      p:'Nace de su historia o interpretación. Nada que reparar, pero sí alguien a quien acompañar — con ternura, nunca como sentencia.',
+      g:'"Esto no nació de algo que hice, pero me importa lo que sientes. Estoy aquí."'}
+  }[r];
+  state.data.testName=cfg.n;state.zoneTint=cfg.tint;
+  document.getElementById('q1b').style.display='none';
+  document.getElementById('q2b').style.display='none';
+  document.getElementById('resBox').innerHTML=`
+    <div class="resultado ${r}"><h3>${cfg.h}</h3><p>${cfg.p}</p><div class="guion">${cfg.g}</div></div>
+    <p class="lead">El camino hacia el castillo tomará este color. 🏰</p>
+    <button class="btn primary" onclick="hide()">Recorrer el camino ${r==='verde'?'🟢':r==='ambar'?'🟡':'🔵'}</button>`;
+}
+function stepAcuerdo(){
+  show(`
+    <div class="eyebrow">🚩 Checkpoint 6 · El acuerdo</div>
+    <h2>Elijan un acuerdo pequeño</h2>
+    <p class="lead">Uno solo, verificable. Es la llave del castillo. 🗝️ (Y si vas montada en Capuccina, su doble salto te lleva a la cima dorada antes de la meta.)</p>
+    ${chipsHtml('cAc',ACUERDOS)}
+    <input class="otro" id="acOtro" placeholder="✏️ Nuestro propio acuerdo (opcional)" oninput="validateStep()">
+    <button class="btn primary" id="bAc" disabled onclick="saveAcuerdo()">Tomar la llave y seguir</button>
+  `);
+  currentValidator=function(){
+    document.getElementById('bAc').disabled=!(getSel('cAc').length||document.getElementById('acOtro').value.trim());
+  };
+}
+window.saveAcuerdo=function(){
+  state.data.acuerdo=document.getElementById('acOtro').value.trim()||getSel('cAc')[0];
+  currentValidator=null;hide();
+};
+function openFinal(){
+  const d=state.data;
+  show(`
+    <div class="eyebrow">🏰 ¡Llegaron al castillo!</div>
+    <h2>Lo que construyeron hoy 💛</h2>
+    <div class="res-item"><h4>Corazones de conexión</h4><p>💗 ${state.hearts} recogidos${state.bonus?' · ⭐ ¡Cima del compromiso alcanzada!':''}${cat.mounted||cat.mode==='follow'?' · 🐱 Capuccina llegó contigo':''}</p></div>
+    <div class="res-item"><h4>La frase</h4><p>${d.frase?'"'+d.frase+'"':'(no se armó)'}</p></div>
+    <div class="res-item"><h4>El diagnóstico</h4><p>${d.testName||'(no se realizó)'}</p></div>
+    <div class="res-item"><h4>Nuestro acuerdo</h4><p>${d.acuerdo||'(pendiente)'}</p></div>
+    <div class="res-item"><h4>Último nivel: el cuerpo</h4><p>Abrazo de <b>20 segundos reales</b>. El cuerpo también necesita saber que el conflicto terminó.</p></div>
+    <button class="btn rosa" onclick="restartGame()">Jugar de nuevo (intercambiar roles)</button>
+  `);
+}
+window.restartGame=function(){
+  player.x=120;resetPlayerY();player.vx=0;player.vy=0;player.hurtT=0;player.airJumps=0;
+  state.cam=0;state.hearts=0;state.finished=false;state.bonus=false;state.blocksHit=0;state.zoneTint=null;
+  state.data={regulado:'',hecho:'',sents:[],nec:'',ped:'',frase:'',test:'',testName:'',acuerdo:''};
+  checkpoints.forEach(c=>c.done=false);
+  qblocks.forEach(b=>{b.used=false;b.bump=0;});
+  fruits.forEach(f=>f.taken=false);
+  for(let i=fruits.length-1;i>=0;i--){if(fruits[i].pop)fruits.splice(i,1);}
+  snails.forEach(s=>{s.dead=0;});
+  cat.active=true;cat.mode='follow';cat.mounted=false;cat.x=180;resetCatY();cat.vy=0;cat.fleeT=0;
+  floaters.length=0;loveIdx=0;
+  document.getElementById('heartsCount').textContent='0';
+  document.getElementById('frogHud').style.display='none';
+  hide();intro();
+};
+function intro(){
+  show(`
+    <div class="eyebrow">Corazón Valiente III · Brújula de pareja</div>
+    <h2>Un corazón, Capuccina y la Sombra del pantano</h2>
+    <p class="lead"><b>◀ ▶ moverse, ⤒ saltar</b> (o flechas y espacio). Golpea los bloques <b>?</b>: sueltan frutitas 💗 y <b>mensajes de amor</b>. Tu gatita <b>Capuccina</b> 🐱 te acompaña desde el inicio: <b>salta sobre su lomo para montarla</b> (estilo Yoshi) y ganar <b>doble salto</b>. Los caracoles del rencor 🐌 la asustan: si te golpean, se baja y corre — <b>persíguela y atrápala</b> para que vuelva a confiar. Montado en ella alcanzas la <b>cima dorada</b> ⭐ antes del castillo.</p>
+    <p class="lead">En cada bandera 🚩 aparece el <b>Sapo de la Sombra</b> con sus nubes: respóndele con honestidad y la luz vuelve. 🎵 Música original incluida (botón 🔊 arriba).</p>
+    <button class="btn rosa" onclick="initAudio();hide();">¡A jugar! 💗🐱</button>
+  `);
+}
+intro();
+</script>
+</body>
+</html>
